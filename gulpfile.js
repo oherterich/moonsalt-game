@@ -11,6 +11,15 @@ var browserify = require('gulp-browserify');
 var concat = require('gulp-concat');
 var watchify = require('watchify');
 
+// Server
+var express = require('express');
+var app = express();
+var server = require('http').Server(app);
+
+// my files
+var SocketCtrl = require('./controllers/socket.js');
+var socket = new SocketCtrl(server);
+
 // tasks
 gulp.task('lint', function () {
 	gulp.src(['./app/**/*.js', '!./app/bower_components/**'])
@@ -53,7 +62,7 @@ gulp.task('copy-html-files', function () {
 });
 
 gulp.task('browserify', function () {
-	gulp.src(['./app/js/main.js'])
+	gulp.src('./app/js/*.js')
 		.pipe(browserify({
 			insertGlobals: true,
 			debug: true
@@ -63,10 +72,16 @@ gulp.task('browserify', function () {
 });
 
 gulp.task('connect', function () {
-	connect.server({
-		root: 'app/',
-		port: 8888
-	});
+	server.listen(8080);
+
+	app.use (express.static("./app"));
+
+	// io.on('connection', function (socket) {
+	//   socket.emit('news', { hello: 'world' });
+	//   socket.on('my other event', function (data) {
+	//     console.log(data);
+	//   });
+	// });
 });
 
 gulp.task('connectDist', function () {
@@ -86,8 +101,12 @@ gulp.task('browserifyDist', function () {
 		.pipe(gulp.dest('./dist/js/'));
 });
 
+gulp.task('socket', function() {
+    socket.init();
+});
+
 gulp.task('default',
-	['lint', 'browserify', 'connect']
+	['lint', 'browserify', 'connect', 'socket']
 );
 
 gulp.task('build',

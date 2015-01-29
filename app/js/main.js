@@ -91,12 +91,21 @@ document.body.addEventListener('keydown', function (evt) {
 	}
 });
 
+var socket = io.connect('http://localhost:8080');
+socket.on('news', function (data) {
+	console.log(data);
+	socket.emit('my other event', { my: 'data' });
+});
 
 
 
+var animate = function () {
+	window.requestAnimationFrame(animate);
 
+	socket.emit('playerPosition', circleA.position);
+};
 
-
+animate();
 
 
 
